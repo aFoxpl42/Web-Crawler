@@ -1,3 +1,23 @@
+async function crawlPage(baseURL, currentURL, pages) {
+    console.log(`crawling ${currentURL}`)
+    try {
+        const resp = await fetch(currentURL)
+        if (resp.status > 399){
+            console.log(`Get HTTP error, status code: ${resp.status}`)
+            return
+        }
+        const contentType = resp.headers.get('content-type')
+        if (!contentType.includes('text/html')){
+            console.log(`Got non-html response: ${contentType}`)
+            return
+        }
+        console.log(await resp.text())
+    } catch (err) {
+        console.log(err.message)
+    }
+}
+
+
 function normalizeURL(urlString){
     const myURL = new URL(urlString)
     const hostPath = `${myURL.host}${myURL.pathname}`
@@ -8,22 +28,23 @@ function normalizeURL(urlString){
 }
 
 function getURLSFromHtml(htmlBody, baseURL){
+    const urls = []
     const jsdom = require("jsdom");
     const { JSDOM } = jsdom;
     const dom = new JSDOM(htmlBody, {
         url: baseURL,
     });
-    console.log(dom.window.document.querySelectorAll('a'));
+    const linkElements = dom.window.document.querySelectorAll('a')
+    for (const linkElement of linkElements) {
+        urls.push(linkElement.href)
+    }
+    return urls
 }
 
 module.exports = {
     normalizeURL,
-    getURLSFromHtml
+    getURLSFromHtml,
+    crawlPage,
 }
 
-getURLSFromHtml(`<body>
 
-<p><a href="https://www.w3schools.com">W3Schools.com</a></p>
-<p><a href="https://www.w3schools.com/html/">HTML Tutorial</a></p>
-
-</body>`, `https://blog.boot.dev`)
