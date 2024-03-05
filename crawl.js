@@ -1,4 +1,4 @@
-async function crawlPage(baseURL, currentURL, pages) {
+async function crawlPage(currentURL) {
     console.log(`crawling ${currentURL}`)
     try {
         const resp = await fetch(currentURL)
